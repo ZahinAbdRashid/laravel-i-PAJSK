@@ -60,28 +60,51 @@
     </div>
 </div>
 
-<!-- Charts Section -->
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-    <!-- Pie Chart: Students per Class -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col">
-        <h3 class="text-lg font-semibold text-indigo-900 mb-4 border-b pb-2">Taburan Pelajar Mengikut Kelas</h3>
-        <div class="flex-grow flex items-center justify-center relative min-h-[300px]">
-            <canvas id="classPieChart"></canvas>
+<!-- Dynamic Charts Container -->
+<div id="dynamicChartsContainer" class="mt-8 relative">
+    
+    <!-- PIE CHARTS (GENDER) -->
+    <div class="mb-10">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+                <i class="fas fa-venus-mars text-indigo-500"></i> Gender Distribution per Class
+            </h2>
+        </div>
+        <div id="pieChartsGrid" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Dynamically populated -->
         </div>
     </div>
 
-    <!-- Bar Chart: Teacher Submissions -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col">
-        <h3 class="text-lg font-semibold text-indigo-900 mb-4 border-b pb-2">Status Permohonan Mengikut Guru</h3>
-        <div class="flex-grow relative min-h-[300px]">
-            <canvas id="teacherBarChart"></canvas>
+    <!-- MONTHLY STATUS -->
+    <div class="mb-10">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+                <i class="fas fa-chart-bar text-indigo-500"></i> Monthly Approval Status
+            </h2>
+        </div>
+        <div id="barChartsGrid" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Dynamically populated -->
         </div>
     </div>
+
+    <!-- GRADE CHART -->
+    <div class="mb-8">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+                <i class="fas fa-award text-indigo-500"></i> Grade Distribution
+            </h2>
+        </div>
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex-grow relative min-h-[350px]">
+            <canvas id="gradeChart"></canvas>
+        </div>
+    </div>
+
 </div>
 
 @endsection
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     // Students data
     let students = [];
@@ -133,8 +156,9 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                renderPieChart(data.pieChart);
-                renderBarChart(data.barChart);
+                renderPieCharts(data.pieCharts);
+                renderBarCharts(data.barCharts);
+                renderGradeChart(data.gradeChart);
             } else {
                 console.error('Failed to load chart data:', data);
             }
@@ -144,108 +168,168 @@
         });
     }
 
-    // Colors generator
-    function generateColors(count) {
-        const baseColors = [
-            'rgba(79, 70, 229, 0.7)', // Indigo
-            'rgba(16, 185, 129, 0.7)', // Emerald
-            'rgba(245, 158, 11, 0.7)', // Amber
-            'rgba(239, 68, 68, 0.7)', // Red
-            'rgba(14, 165, 233, 0.7)', // Sky
-            'rgba(168, 85, 247, 0.7)', // Purple
-            'rgba(236, 72, 153, 0.7)', // Pink
-            'rgba(99, 102, 241, 0.7)', // Indigo Light
-            'rgba(34, 197, 94, 0.7)', // Green
-            'rgba(249, 115, 22, 0.7)', // Orange
-        ];
-        
-        let colors = [];
-        for(let i = 0; i < count; i++) {
-            colors.push(baseColors[i % baseColors.length]);
+    /* COMMON OPTIONS (clean minimalist look) */
+    const commonOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    color: '#6b7280',
+                    font: { size: 12, family: "'Inter', sans-serif" }
+                }
+            }
         }
-        return colors;
+    };
+
+    /* PIE CHARTS RENDERER */
+    function renderPieCharts(pieChartsData) {
+        const container = document.getElementById('pieChartsGrid');
+        container.innerHTML = ''; // clear
+
+        pieChartsData.forEach((data, index) => {
+            if(data.male === 0 && data.female === 0) return; // skip empty
+            
+            const chartId = `pieChart_${index}`;
+            const colItem = document.createElement('div');
+            colItem.className = 'bg-white p-5 rounded-2xl shadow-sm border border-gray-100 card-hover transition-all';
+            colItem.innerHTML = `
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Class ${data.className}</h3>
+                    <div class="px-2 py-1 bg-indigo-50 text-indigo-700 text-xs rounded-lg font-medium">${data.male + data.female} Students</div>
+                </div>
+                <div class="relative min-h-[220px]">
+                    <canvas id="${chartId}"></canvas>
+                </div>
+            `;
+            container.appendChild(colItem);
+
+            new Chart(document.getElementById(chartId), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Male', 'Female'],
+                    datasets: [{
+                        data: [data.male, data.female],
+                        backgroundColor: ['#3b82f6', '#f472b6'], // Blue, Pink
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    ...commonOptions,
+                    cutout: '65%',
+                }
+            });
+        });
     }
 
-    let pieChartInstance = null;
-    let barChartInstance = null;
+    /* BAR CHARTS RENDERER */
+    function renderBarCharts(barChartsData) {
+        const container = document.getElementById('barChartsGrid');
+        container.innerHTML = '';
 
-    function renderPieChart(chartData) {
-        const ctx = document.getElementById('classPieChart').getContext('2d');
-        
-        if (pieChartInstance) pieChartInstance.destroy();
-        
-        const backgroundColors = generateColors(chartData.labels.length);
-        const borderColors = backgroundColors.map(c => c.replace('0.7)', '1)'));
-        
-        pieChartInstance = new Chart(ctx, {
-            type: 'doughnut',
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+        barChartsData.forEach((data, index) => {
+            // Check if there is any data
+            const hasData = data.approved.some(v => v > 0) || data.rejected.some(v => v > 0);
+            if (!hasData) return;
+
+            const chartId = `barChart_${index}`;
+            const colItem = document.createElement('div');
+            colItem.className = 'bg-white p-5 rounded-2xl shadow-sm border border-gray-100 card-hover transition-all';
+            colItem.innerHTML = `
+                <div class="mb-4">
+                    <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Class ${data.className}</h3>
+                </div>
+                <div class="relative min-h-[250px]">
+                    <canvas id="${chartId}"></canvas>
+                </div>
+            `;
+            container.appendChild(colItem);
+
+            new Chart(document.getElementById(chartId), {
+                type: 'bar',
+                data: {
+                    labels: months,
+                    datasets: [
+                        {
+                            label: 'Approved',
+                            data: data.approved,
+                            backgroundColor: '#10b981', // Emerald 500
+                            borderRadius: 4,
+                            barPercentage: 0.6
+                        },
+                        {
+                            label: 'Rejected',
+                            data: data.rejected,
+                            backgroundColor: '#ef4444', // Red 500
+                            borderRadius: 4,
+                            barPercentage: 0.6
+                        }
+                    ]
+                },
+                options: {
+                    ...commonOptions,
+                    plugins: {
+                        legend: { position: 'top' }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false }
+                        },
+                        y: {
+                            grid: { color: '#f3f4f6', drawBorder: false },
+                            beginAtZero: true,
+                            ticks: { stepSize: 1 }
+                        }
+                    }
+                }
+            });
+        });
+    }
+
+    /* GRADE CHART RENDERER */
+    function renderGradeChart(gradeData) {
+        new Chart(document.getElementById('gradeChart'), {
+            type: 'bar',
             data: {
-                labels: chartData.labels,
+                labels: gradeData.labels,
                 datasets: [{
-                    data: chartData.data,
-                    backgroundColor: backgroundColors,
-                    borderColor: borderColors,
-                    borderWidth: 1
+                    label: 'Students',
+                    data: gradeData.data,
+                    backgroundColor: [
+                        '#3b82f6', // blue
+                        '#6366f1', // indigo
+                        '#8b5cf6', // violet
+                        '#d946ef', // fuchsia
+                        '#f43f5e'  // rose
+                    ],
+                    borderRadius: 8,
+                    barPercentage: 0.5
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: {
-                        position: 'right',
-                        labels: { boxWidth: 12, font: { size: 11 } }
+                    legend: { display: false }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false }
                     },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                let label = context.label || '';
-                                if (label) {
-                                    label += ': ';
-                                }
-                                if (context.parsed !== null) {
-                                    label += context.parsed + ' Pelajar';
-                                }
-                                return label;
-                            }
-                        }
+                    y: {
+                        grid: { color: '#f3f4f6', drawBorder: false },
+                        beginAtZero: true,
+                        ticks: { stepSize: 1 }
                     }
                 }
             }
         });
     }
 
-    function renderBarChart(chartData) {
-        const ctx = document.getElementById('teacherBarChart').getContext('2d');
-        
-        if (barChartInstance) barChartInstance.destroy();
-        
-        barChartInstance = new Chart(ctx, {
-            type: 'bar',
-            data: chartData,
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    x: {
-                        stacked: false,
-                        grid: { display: false }
-                    },
-                    y: {
-                        stacked: false,
-                        beginAtZero: true,
-                        ticks: { stepSize: 1 }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        position: 'top',
-                    }
-                }
-            }
-        });
-    }
-    
     // Update student statistics
     function updateStudentStats() {
         const total = students.length;
@@ -270,14 +354,16 @@
             const hasSports = !!(s.sports && s.sports.trim() !== '');
             const hasClub = !!(s.club && s.club.trim() !== '');
             const hasUniform = !!(s.uniform && s.uniform.trim() !== '');
-            // Competition inferred from position/marks is not stored separately, so we treat sports/club/uniform as main components.
             if (!hasSports || !hasClub || !hasUniform) {
                 missingComponents++;
             }
         });
 
-        document.getElementById('statHighGrades').textContent = highGrades;
-        document.getElementById('statMissingComponents').textContent = missingComponents;
+        const highGradesEl = document.getElementById('statHighGrades');
+        if (highGradesEl) highGradesEl.textContent = highGrades;
+        
+        const missingEl = document.getElementById('statMissingComponents');
+        if (missingEl) missingEl.textContent = missingComponents;
     }
     
     // Initialize on page load

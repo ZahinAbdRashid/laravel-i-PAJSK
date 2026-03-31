@@ -66,74 +66,95 @@ class DashboardController extends Controller
      */
     public function getChartData()
     {
-        // 1. Pie Chart: Students distribution by Class (Tingkatan)
-        $students = Student::with('teacher')->get();
+        // 1. Gather all students with user and currentMark to compute Gender per class and Grades
+        $students = Student::with(['teacher', 'user', 'currentMark'])->get();
         
         $classDistribution = [];
+        $gradesCount = ['A' => 0, 'B' => 0, 'C' => 0, 'D' => 0, 'E' => 0];
+
         foreach ($students as $student) {
             $className = $student->teacher ? $student->teacher->assigned_class : 'Tiada Kelas';
             if (!isset($classDistribution[$className])) {
-                $classDistribution[$className] = 0;
+                $classDistribution[$className] = [
+                    'className' => $className,
+                    'male' => 0,
+                    'female' => 0,
+                    'monthlyStatus' => [
+                        'approved' => array_fill(1, 12, 0),
+                        'rejected' => array_fill(1, 12, 0)
+                    ]
+                ];
             }
-            $classDistribution[$className]++;
+            
+            // Gender count
+            $gender = $student->user ? $student->user->gender : 'Unknown';
+            if (in_array(strtolower($gender), ['male', 'lelaki'])) {
+                $classDistribution[$className]['male']++;
+            } elseif (in_array(strtolower($gender), ['female', 'perempuan'])) {
+                $classDistribution[$className]['female']++;
+            }
+
+            // Grade logic (based on total points)
+            $score = $student->currentMark ? (int)$student->currentMark->total : 0;
+            if ($score >= 80) $gradesCount['A']++;
+            elseif ($score >= 70) $gradesCount['B']++;
+            elseif ($score >= 60) $gradesCount['C']++;
+            elseif ($score >= 50) $gradesCount['D']++;
+            else $gradesCount['E']++;
         }
 
-        // Format for Chart.js
-        $pieChartData = [
-            'labels' => array_keys($classDistribution),
-            'data' => array_values($classDistribution)
-        ];
-
-        // 2. Bar Chart: Activities Submissions & Rejections grouped by Teacher
+        // 2. Activities for Monthly Status per class
         $activities = Activity::select(
-                'users.name as teacher_name',
-                DB::raw('COUNT(*) as total_submissions'),
-                DB::raw("SUM(CASE WHEN activities.status = 'rejected' THEN 1 ELSE 0 END) as total_rejected")
-            )
-            ->join('students', 'activities.student_id', '=', 'students.id')
-            ->join('teachers', 'students.teacher_id', '=', 'teachers.id')
-            ->join('users', 'teachers.user_id', '=', 'users.id') // Join with users to get actual name
-            ->whereNull('activities.deleted_at') // Soft deletes check
-            ->groupBy('teachers.id', 'users.name')
-            ->get();
-            
-        $teacherNames = [];
-        $totalSubmissions = [];
-        $totalRejections = [];
-        
-        foreach($activities as $activity) {
-            $tName = $activity->teacher_name ?: 'Unknown';
-            
-            $teacherNames[] = $tName;
-            $totalSubmissions[] = $activity->total_submissions;
-            $totalRejections[] = $activity->total_rejected;
+            'activities.status',
+            'activities.created_at',
+            'teachers.assigned_class'
+        )
+        ->join('students', 'activities.student_id', '=', 'students.id')
+        ->join('teachers', 'students.teacher_id', '=', 'teachers.id')
+        ->whereNull('activities.deleted_at')
+        ->get();
+
+        foreach ($activities as $activity) {
+            $className = $activity->assigned_class ?: 'Tiada Kelas';
+            if (isset($classDistribution[$className]) && $activity->created_at) {
+                $month = (int)$activity->created_at->format('n'); // 1-12
+                if ($activity->status === 'approved') {
+                    $classDistribution[$className]['monthlyStatus']['approved'][$month]++;
+                } elseif ($activity->status === 'rejected') {
+                    $classDistribution[$className]['monthlyStatus']['rejected'][$month]++;
+                }
+            }
         }
 
-        // Format for Chart.js
-        $barChartData = [
-            'labels' => $teacherNames,
-            'datasets' => [
-                [
-                    'label' => 'Total Submissions',
-                    'data' => $totalSubmissions,
-                    'backgroundColor' => 'rgba(79, 70, 229, 0.7)', // Indigo
-                    'borderColor' => 'rgb(79, 70, 229)',
-                    'borderWidth' => 1
-                ],
-                [
-                    'label' => 'Rejected Submissions',
-                    'data' => $totalRejections,
-                    'backgroundColor' => 'rgba(239, 68, 68, 0.7)', // Red
-                    'borderColor' => 'rgb(239, 68, 68)',
-                    'borderWidth' => 1
-                ]
-            ]
-        ];
+        // Prepare structured data for frontend
+        $classNames = array_keys($classDistribution);
+        $pieCharts = [];
+        $barCharts = [];
+
+        foreach ($classDistribution as $className => $data) {
+            $pieCharts[] = [
+                'className' => $className,
+                'male' => $data['male'],
+                'female' => $data['female']
+            ];
+            
+            $barCharts[] = [
+                'className' => $className,
+                // Flatten to simple 12-element array
+                'approved' => array_values($data['monthlyStatus']['approved']),
+                'rejected' => array_values($data['monthlyStatus']['rejected'])
+            ];
+        }
 
         return response()->json([
             'success' => true,
-            'pieChart' => $pieChartData,
-            'barChart' => $barChartData
+            'classes' => $classNames,
+            'pieCharts' => $pieCharts,
+            'barCharts' => $barCharts,
+            'gradeChart' => [
+                'labels' => ['A', 'B', 'C', 'D', 'E'],
+                'data' => array_values($gradesCount) // [A,B,C,D,E]
+            ]
         ]);
     }
 }
