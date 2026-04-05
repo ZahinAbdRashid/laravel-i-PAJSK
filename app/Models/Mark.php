@@ -27,11 +27,10 @@ class Mark extends Model
     public static function calculateGrade($total)
     {
         if ($total >= 80) return 'A';
-        if ($total >= 70) return 'B';
-        if ($total >= 60) return 'C';
-        if ($total >= 50) return 'D';
-        if ($total >= 40) return 'E';
-        return 'F';
+        if ($total >= 60) return 'B';
+        if ($total >= 40) return 'C';
+        if ($total >= 20) return 'D';
+        return 'E';
     }
 
     // Calculate total from components

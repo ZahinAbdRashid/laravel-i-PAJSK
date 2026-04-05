@@ -11,13 +11,14 @@ class SuggestionRule extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'name', 'priority', 'active', 'conditions', 'actions'
+        'name', 'priority', 'active', 'expiry_date', 'conditions', 'actions'
     ];
 
     protected $casts = [
         'conditions' => 'array',
         'actions' => 'array',
-        'active' => 'boolean'
+        'active' => 'boolean',
+        'expiry_date' => 'date'
     ];
 
     // Scope for active rules
@@ -203,11 +204,11 @@ class SuggestionRule extends Model
         // Determine grade
         if ($totalScore >= 80) {
             $grade = 'A';
-        } elseif ($totalScore >= 70) {
-            $grade = 'B';
         } elseif ($totalScore >= 60) {
+            $grade = 'B';
+        } elseif ($totalScore >= 40) {
             $grade = 'C';
-        } elseif ($totalScore >= 50) {
+        } elseif ($totalScore >= 20) {
             $grade = 'D';
         } else {
             $grade = 'E';

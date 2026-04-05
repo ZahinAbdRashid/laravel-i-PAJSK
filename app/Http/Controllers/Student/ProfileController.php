@@ -8,9 +8,7 @@ use Illuminate\Support\Facades\Auth;
 
 class ProfileController extends Controller
 {
-    /**
-     * Display the student profile.
-     */
+    // Display the student profile.
     public function index()
     {
         $user = Auth::user();

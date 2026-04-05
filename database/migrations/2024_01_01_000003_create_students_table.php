@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('teacher_id')->constrained('teachers')->onDelete('cascade');
-            $table->string('academic_session');  // 2024/2025
+            $table->string('academic_session');  //example - 2024/2025
             $table->enum('semester', ['1', '2', '3']);
             
             // Activity participation (as per teacher input)

@@ -11,9 +11,7 @@ use Illuminate\Support\Facades\Hash;
 
 class StudentController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    // Display a listing of the resource.
     public function index()
     {
         $teacher = Auth::user()->teacher;
@@ -33,9 +31,7 @@ class StudentController extends Controller
         ]);
     }
 
-    /**
-     * Export a PDF report of the class's PAJSK marks.
-     */
+    // Export a PDF report of the class's PAJSK marks.
     public function exportReport()
     {
         $teacher = Auth::user()->teacher;
@@ -70,9 +66,7 @@ class StudentController extends Controller
         return $pdf->download($filename);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
+    // Show the form for creating a new resource.
     public function create()
     {
         $teacher = Auth::user()->teacher;
@@ -87,9 +81,7 @@ class StudentController extends Controller
         ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    // Store a newly created resource in storage.
     public function store(Request $request)
     {
         $request->validate([
@@ -137,9 +129,7 @@ class StudentController extends Controller
             ->with('success', 'Student added successfully! Default password: admin123');
     }
 
-    /**
-     * Display the specified resource.
-     */
+    // Display the specified resource.
     public function show(string $id)
     {
         $student = Student::where('teacher_id', Auth::user()->teacher->id)
@@ -149,9 +139,7 @@ class StudentController extends Controller
         return view('teacher.students.show', compact('student'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
+    // Show the form for editing the specified resource.
     public function edit(string $id)
     {
         $student = Student::where('teacher_id', Auth::user()->teacher->id)
@@ -169,9 +157,7 @@ class StudentController extends Controller
         ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
+    // Update the specified resource in storage.
     public function update(Request $request, $id)
     {
         $student = Student::where('teacher_id', Auth::user()->teacher->id)
@@ -219,9 +205,7 @@ class StudentController extends Controller
             ->with('success', 'Student updated successfully!');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    // Remove the specified resource from storage.
     public function destroy($id)
     {
         $student = Student::where('teacher_id', Auth::user()->teacher->id)
@@ -243,9 +227,7 @@ class StudentController extends Controller
             ->with('success', 'Student deleted successfully!');
     }
 
-    /**
-     * Update student marks
-     */
+    // Update student marks
     public function updateMarks(Request $request, $id)
     {
         $student = Student::where('teacher_id', Auth::user()->teacher->id)
@@ -381,15 +363,13 @@ class StudentController extends Controller
     private function calculateGrade($score)
     {
         if ($score >= 80) return 'A';
-        if ($score >= 70) return 'B';
-        if ($score >= 60) return 'C';
-        if ($score >= 50) return 'D';
+        if ($score >= 60) return 'B';
+        if ($score >= 40) return 'C';
+        if ($score >= 20) return 'D';
         return 'E';
     }
     
-    /**
-     * API endpoint to get all students for current teacher
-     */
+    // API endpoint to get all students for current teacher
     public function apiIndex()
     {
         $teacher = Auth::user()->teacher;
@@ -438,9 +418,7 @@ class StudentController extends Controller
         ]);
     }
     
-    /**
-     * API endpoint to update marks
-     */
+    // API endpoint to update marks
     public function apiUpdateMarks(Request $request, $id)
     {
         return $this->updateMarks($request, $id);

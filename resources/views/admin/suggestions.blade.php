@@ -70,15 +70,20 @@
                     <div class="rule-card bg-white border border-gray-200 rounded-lg p-5">
                         <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-4">
                             <div class="flex-1">
-                                <div class="flex items-center gap-2 mb-2">
-                                    <h4 class="font-semibold text-gray-900">{{ $rule->name }}</h4>
-                                    @if($rule->active)
-                                        <span class="status-active">Active</span>
-                                    @else
-                                        <span class="status-inactive">Inactive</span>
-                                    @endif
-                                    <span class="priority-badge">Priority: {{ $rule->priority }}</span>
-                                </div>
+                                    <div class="flex flex-wrap items-center gap-2 mb-2">
+                                        <h4 class="font-semibold text-gray-900">{{ $rule->name }}</h4>
+                                        @if($rule->active)
+                                            <span class="status-active">Active</span>
+                                        @else
+                                            <span class="status-inactive">Inactive</span>
+                                        @endif
+                                        <span class="priority-badge">Priority: {{ $rule->priority }}</span>
+                                        @if($rule->expiry_date)
+                                            <span class="priority-badge !bg-red-50 !text-red-600 !border-red-200" title="Rule will auto-delete after this date">
+                                                <i class="far fa-calendar-alt"></i> Expires: {{ \Carbon\Carbon::parse($rule->expiry_date)->format('d M Y') }}
+                                            </span>
+                                        @endif
+                                    </div>
                                 
                                 <!-- Conditions -->
                                 <div class="mb-4">
@@ -166,8 +171,27 @@
         </div>
         <div class="p-6">
             <div class="space-y-6">
+                <!-- Help Info Alert -->
+                <div class="bg-indigo-50 border-l-4 border-indigo-500 p-4 rounded-md">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-info-circle text-indigo-500 mt-0.5"></i>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-indigo-800">How to use rules:</h3>
+                            <div class="mt-2 text-sm text-indigo-700">
+                                <ul class="list-disc pl-5 space-y-1">
+                                    <li><strong>Conditions:</strong> Requirement for rule to trigger (e.g., Grade is C).</li>
+                                    <li><strong>Suggestions:</strong> What activities to recommend when conditions are met.</li>
+                                    <li><strong>Expiry Date (Optional):</strong> Date when this rule will automatically be deleted (useful for temporary events).</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Rule Basic Info -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Rule Name *</label>
                         <input type="text" id="ruleName"
@@ -177,6 +201,11 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Priority *</label>
                         <input type="number" id="rulePriority" min="1" max="100" value="1"
+                                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-900 focus:border-indigo-900 outline-none transition">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Expiry Date <i class="fas fa-question-circle text-gray-400" title="Rule will be auto-deleted after this date"></i></label>
+                        <input type="date" id="ruleExpiryDate"
                                 class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-900 focus:border-indigo-900 outline-none transition">
                     </div>
                 </div>
@@ -270,6 +299,7 @@
         document.getElementById('ruleName').value = '';
         document.getElementById('rulePriority').value = {{ $rules->count() + 1 }};
         document.getElementById('ruleActive').checked = true;
+        document.getElementById('ruleExpiryDate').value = '';
         document.getElementById('conditionsContainer').innerHTML = '';
         document.getElementById('actionsContainer').innerHTML = '';
 
@@ -303,6 +333,7 @@
             document.getElementById('ruleName').value = rule.name;
             document.getElementById('rulePriority').value = rule.priority;
             document.getElementById('ruleActive').checked = !!rule.active;
+            document.getElementById('ruleExpiryDate').value = rule.expiry_date ? rule.expiry_date.substring(0, 10) : '';
 
             const conditionsContainer = document.getElementById('conditionsContainer');
             conditionsContainer.innerHTML = '';
@@ -488,6 +519,7 @@
         const name = document.getElementById('ruleName').value.trim();
         const priority = parseInt(document.getElementById('rulePriority').value);
         const active = document.getElementById('ruleActive').checked;
+        const expiryDate = document.getElementById('ruleExpiryDate').value;
 
         if (!name) {
             showToast('Please enter a rule name', 'error');
@@ -551,6 +583,7 @@
             name,
             priority,
             active,
+            expiry_date: expiryDate || null,
             conditions,
             actions
         };

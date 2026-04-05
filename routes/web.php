@@ -90,6 +90,10 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     // Student Data & Backup Page
     Route::get('/students-backup', [\App\Http\Controllers\Admin\DashboardController::class, 'studentBackup'])
         ->name('admin.students.backup');
+        
+    // Admin Submissions Log
+    Route::get('/submissions-log', [\App\Http\Controllers\Admin\DashboardController::class, 'submissionsLog'])
+        ->name('admin.submissions.log');
 });
 
 // Protected Teacher Routes - MANUAL CHECKS

@@ -11,9 +11,7 @@ use App\Models\Mark;
 
 class DashboardController extends Controller
 {
-    /**
-     * Display teacher dashboard.
-     */
+    // Display teacher dashboard.
     public function index()
     {
         $teacher = Auth::user()->teacher;
@@ -83,9 +81,7 @@ class DashboardController extends Controller
         ));
     }
 
-    /**
-     * Get grade distribution for teacher's class.
-     */
+    // Get grade distribution for teacher's class.
     private function getGradeDistribution($students)
     {
         $grades = [

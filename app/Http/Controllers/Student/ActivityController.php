@@ -12,9 +12,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class ActivityController extends Controller
 {
-    /**
-     * Display a listing of the activities.
-     */
+    // Display a listing of the activities.
     public function index()
     {
         $user = Auth::user();
@@ -48,9 +46,7 @@ class ActivityController extends Controller
         ]);
     }
 
-    /**
-     * Store a newly created activity.
-     */
+    // Store a newly created activity.
     public function store(Request $request)
     {
         $request->validate([
@@ -101,9 +97,7 @@ class ActivityController extends Controller
             ->with('success', 'Activity submitted successfully! Your activity is pending review.');
     }
 
-    /**
-     * Show the form for editing the specified activity.
-     */
+    // Show the form for editing the specified activity.
     public function edit($id)
     {
         $user = Auth::user();
@@ -125,9 +119,7 @@ class ActivityController extends Controller
         return view('student.edit-activity', compact('activity', 'documents'));
     }
 
-    /**
-     * Update the specified activity.
-     */
+    // Update the specified activity.
     public function update(Request $request, $id)
     {
         $request->validate([
@@ -174,9 +166,7 @@ class ActivityController extends Controller
             ->with('success', 'Activity updated successfully! It will be reviewed again.');
     }
 
-    /**
-     * Appeal a rejected activity.
-     */
+    // Appeal a rejected activity.
     public function appeal(Request $request, $id)
     {
         $request->validate([
@@ -219,9 +209,7 @@ class ActivityController extends Controller
             ->with('success', 'Activity appealed successfully! It has been resubmitted for review.');
     }
 
-    /**
-     * Remove the specified activity.
-     */
+    // Remove the specified activity.
     public function destroy($id)
     {
         $user = Auth::user();
@@ -250,9 +238,7 @@ class ActivityController extends Controller
             ->with('success', 'Activity deleted successfully!');
     }
 
-    /**
-     * Remove a document from activity.
-     */
+    // Remove a document from activity.
     public function destroyDocument($id)
     {
         try {
@@ -296,9 +282,7 @@ class ActivityController extends Controller
         }
     }
 
-    /**
-     * Calculate student's current PAJSK score.
-     */
+    // Calculate student's current PAJSK score.
     public function calculateScore()
     {
         $user = Auth::user();
@@ -349,9 +333,7 @@ class ActivityController extends Controller
         ];
     }
 
-    /**
-     * Download PAJSK score report as PDF.
-     */
+    // Download PAJSK score report as PDF.
     public function downloadReport()
     {
         try {
@@ -406,47 +388,60 @@ class ActivityController extends Controller
         }
     }
 
-    /**
-     * Calculate points for a single activity.
-     */
+    // Calculate points for a single activity.
     private function calculateActivityPoints($activity)
     {
-        $levelPoints = [
-            'school' => 2,
-            'district' => 4,
-            'state' => 6,
-            'national' => 8,
-            'international' => 10
+        // Official Malaysian PAJSK Rubric for Achievement (Pencapaian)
+        $rubric = [
+            'international' => [
+                'first' => 20,
+                'second' => 19,
+                'third' => 18,
+                'participation' => 15
+            ],
+            'national' => [
+                'first' => 17,
+                'second' => 16,
+                'third' => 15,
+                'participation' => 12
+            ],
+            'state' => [
+                'first' => 14,
+                'second' => 13,
+                'third' => 12,
+                'participation' => 10
+            ],
+            'district' => [
+                'first' => 11,
+                'second' => 10,
+                'third' => 9,
+                'participation' => 8
+            ],
+            'school' => [
+                'first' => 8,
+                'second' => 7,
+                'third' => 6,
+                'participation' => 5
+            ]
         ];
 
-        $achievementMultiplier = [
-            'participation' => 1,
-            'third' => 1.5,
-            'second' => 2,
-            'first' => 3
-        ];
+        $level = $activity->level ?? 'school';
+        $achievement = $activity->achievement ?? 'participation';
 
-        $basePoints = $levelPoints[$activity->level] ?? 2;
-        $multiplier = $achievementMultiplier[$activity->achievement] ?? 1;
-
-        return round($basePoints * $multiplier, 1);
+        return $rubric[$level][$achievement] ?? 5; // Default to minimum if not found
     }
 
-    /**
-     * Calculate grade from total score.
-     */
+    // Calculate grade from total score.
     private function calculateGrade($totalScore)
     {
         if ($totalScore >= 80) return 'A';
-        if ($totalScore >= 70) return 'B';
-        if ($totalScore >= 60) return 'C';
-        if ($totalScore >= 50) return 'D';
+        if ($totalScore >= 60) return 'B';
+        if ($totalScore >= 40) return 'C';
+        if ($totalScore >= 20) return 'D';
         return 'E';
     }
 
-    /**
-     * Display student dashboard with activities and scores.
-     */
+    // Display student dashboard with activities and scores.
     public function dashboard()
     {
         $user = Auth::user();

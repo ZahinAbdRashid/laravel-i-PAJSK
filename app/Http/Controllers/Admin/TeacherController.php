@@ -10,9 +10,7 @@ use Illuminate\Support\Facades\Hash;
 
 class TeacherController extends Controller
 {
-    /**
-     * Display a listing of teachers.
-     */
+    // Display a listing of teachers.
     public function index()
     {
         $teachers = Teacher::with('user')->latest()->paginate(15);
@@ -20,17 +18,13 @@ class TeacherController extends Controller
         return view('admin.manage-teachers', compact('teachers'));
     }
 
-    /**
-     * Show the form for creating a new teacher.
-     */
+    // Show the form for creating a new teacher.
     public function create()
     {
         return view('admin.teachers.create');
     }
 
-    /**
-     * Store a newly created teacher in storage.
-     */
+    // Store a newly created teacher in storage.
     public function store(Request $request)
     {
         $request->validate([
@@ -67,26 +61,20 @@ class TeacherController extends Controller
             ->with('success', 'Teacher created successfully!');
     }
 
-    /**
-     * Display the specified teacher.
-     */
+    // Display the specified teacher.
     public function show(Teacher $teacher)
     {
         $teacher->load('user', 'students.user');
         return view('admin.teachers.show', compact('teacher'));
     }
 
-    /**
-     * Show the form for editing the specified teacher.
-     */
+    // Show the form for editing the specified teacher.
     public function edit(Teacher $teacher)
     {
         return view('admin.teachers.edit', compact('teacher'));
     }
 
-    /**
-     * Update the specified teacher in storage.
-     */
+    // Update the specified teacher in storage.
     public function update(Request $request, Teacher $teacher)
     {
         $request->validate([
@@ -120,9 +108,7 @@ class TeacherController extends Controller
             ->with('success', 'Teacher updated successfully!');
     }
 
-    /**
-     * Remove the specified teacher from storage.
-     */
+    // Remove the specified teacher from storage.
     public function destroy(Teacher $teacher, Request $request)
     {
         try {

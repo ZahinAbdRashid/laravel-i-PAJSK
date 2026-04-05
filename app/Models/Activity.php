@@ -60,24 +60,44 @@ class Activity extends Model
     // Calculate points based on level and achievement
     public function calculatePoints()
     {
-        $levelPoints = [
-            'school' => 2,
-            'district' => 4,
-            'state' => 6,
-            'national' => 8,
-            'international' => 10
+        // Official Malaysian PAJSK Rubric for Achievement (Pencapaian)
+        $rubric = [
+            'international' => [
+                'first' => 20,
+                'second' => 19,
+                'third' => 18,
+                'participation' => 15
+            ],
+            'national' => [
+                'first' => 17,
+                'second' => 16,
+                'third' => 15,
+                'participation' => 12
+            ],
+            'state' => [
+                'first' => 14,
+                'second' => 13,
+                'third' => 12,
+                'participation' => 10
+            ],
+            'district' => [
+                'first' => 11,
+                'second' => 10,
+                'third' => 9,
+                'participation' => 8
+            ],
+            'school' => [
+                'first' => 8,
+                'second' => 7,
+                'third' => 6,
+                'participation' => 5
+            ]
         ];
 
-        $achievementMultiplier = [
-            'participation' => 1,
-            'third' => 1.5,
-            'second' => 2,
-            'first' => 3
-        ];
+        $level = $this->level ?? 'school';
+        $achievement = $this->achievement ?? 'participation';
 
-        $points = $levelPoints[$this->level] ?? 2;
-        $multiplier = $achievementMultiplier[$this->achievement] ?? 1;
-
-        return $points * $multiplier;
+        // Assuming all Activity Types (Uniform, Club, Sport) use the same standard PAJSK rubric for achievement.
+        return $rubric[$level][$achievement] ?? 5; // Default to minimum if not found
     }
 }

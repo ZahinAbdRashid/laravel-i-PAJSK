@@ -13,9 +13,7 @@ use Illuminate\Support\Facades\DB;
 
 class ApprovalController extends Controller
 {
-    /**
-     * Display pending activities for approval on dedicated Submissions page.
-     */
+    // Display pending activities for approval on dedicated Submissions page.
     public function index()
     {
         $teacher = Auth::user()->teacher;
@@ -50,9 +48,7 @@ class ApprovalController extends Controller
         return view('teacher.submissions', compact('activities', 'activityTypes', 'archivedActivities'));
     }
 
-    /**
-     * Show activity details for review.
-     */
+    // Show activity details for review.
     public function show($id)
     {
         try {
@@ -98,9 +94,7 @@ class ApprovalController extends Controller
         }
     }
 
-    /**
-     * Approve an activity.
-     */
+    // Approve an activity.
     public function approve(Request $request, $id)
     {
         try {
@@ -144,9 +138,7 @@ class ApprovalController extends Controller
         }
     }
 
-    /**
-     * Reject an activity.
-     */
+    // Reject an activity.
     public function reject(Request $request, $id)
     {
         try {
@@ -184,9 +176,7 @@ class ApprovalController extends Controller
         }
     }
     
-    /**
-     * Archive an activity (soft delete).
-     */
+    // Archive an activity (soft delete).
     public function archive($id)
     {
         try {
@@ -214,9 +204,7 @@ class ApprovalController extends Controller
         }
     }
     
-    /**
-     * Restore an archived activity.
-     */
+    // Restore an archived activity.
     public function restore($id)
     {
         try {
@@ -244,9 +232,7 @@ class ApprovalController extends Controller
         }
     }
 
-    /**
-     * Update student marks after activity approval.
-     */
+    // Update student marks after activity approval.
     private function updateStudentMarks($studentId)
     {
         try {
@@ -308,47 +294,60 @@ class ApprovalController extends Controller
         }
     }
 
-    /**
-     * Calculate points for a single activity.
-     */
+    // Calculate points for a single activity.
     private function calculateActivityPoints($activity)
     {
-        $levelPoints = [
-            'school' => 2,
-            'district' => 4,
-            'state' => 6,
-            'national' => 8,
-            'international' => 10
+        // Official Malaysian PAJSK Rubric for Achievement (Pencapaian)
+        $rubric = [
+            'international' => [
+                'first' => 20,
+                'second' => 19,
+                'third' => 18,
+                'participation' => 15
+            ],
+            'national' => [
+                'first' => 17,
+                'second' => 16,
+                'third' => 15,
+                'participation' => 12
+            ],
+            'state' => [
+                'first' => 14,
+                'second' => 13,
+                'third' => 12,
+                'participation' => 10
+            ],
+            'district' => [
+                'first' => 11,
+                'second' => 10,
+                'third' => 9,
+                'participation' => 8
+            ],
+            'school' => [
+                'first' => 8,
+                'second' => 7,
+                'third' => 6,
+                'participation' => 5
+            ]
         ];
 
-        $achievementMultiplier = [
-            'participation' => 1,
-            'third' => 1.5,
-            'second' => 2,
-            'first' => 3
-        ];
+        $level = $activity->level ?? 'school';
+        $achievement = $activity->achievement ?? 'participation';
 
-        $basePoints = $levelPoints[$activity->level] ?? 2;
-        $multiplier = $achievementMultiplier[$activity->achievement] ?? 1;
-
-        return $basePoints * $multiplier;
+        return $rubric[$level][$achievement] ?? 5; // Default to minimum if not found
     }
 
-    /**
-     * Calculate grade from total score.
-     */
+    // Calculate grade from total score.
     private function calculateGrade($totalScore)
     {
         if ($totalScore >= 80) return 'A';
-        if ($totalScore >= 70) return 'B';
-        if ($totalScore >= 60) return 'C';
-        if ($totalScore >= 50) return 'D';
+        if ($totalScore >= 60) return 'B';
+        if ($totalScore >= 40) return 'C';
+        if ($totalScore >= 20) return 'D';
         return 'E';
     }
 
-    /**
-     * Get activity type text.
-     */
+    // Get activity type text.
     private function getActivityTypeText($type)
     {
         $types = [

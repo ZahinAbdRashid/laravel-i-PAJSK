@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('teachers', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->string('staff_id')->unique();  // STF2024001
+            $table->string('staff_id')->unique();  //example - STF2024001
             $table->string('subject');
             $table->enum('assigned_class', ['alpha', 'delta', 'omega'])->nullable();
             $table->timestamps();

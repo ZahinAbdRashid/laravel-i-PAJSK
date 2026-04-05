@@ -13,7 +13,7 @@ return new class extends Migration
             $table->string('ic_number')->unique();  // Format: 123456-78-9012
             $table->string('name');
             $table->string('email')->unique();
-            $table->string('password');
+            $table->string('password'); //admin123 - default password
             $table->enum('role', ['admin', 'teacher', 'student']);
             $table->string('phone')->nullable();
             $table->enum('gender', ['male', 'female'])->nullable();

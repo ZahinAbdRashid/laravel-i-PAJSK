@@ -97,9 +97,9 @@ class DashboardController extends Controller
             // Grade logic (based on total points)
             $score = $student->currentMark ? (int)$student->currentMark->total : 0;
             if ($score >= 80) $gradesCount['A']++;
-            elseif ($score >= 70) $gradesCount['B']++;
-            elseif ($score >= 60) $gradesCount['C']++;
-            elseif ($score >= 50) $gradesCount['D']++;
+            elseif ($score >= 60) $gradesCount['B']++;
+            elseif ($score >= 40) $gradesCount['C']++;
+            elseif ($score >= 20) $gradesCount['D']++;
             else $gradesCount['E']++;
         }
 
@@ -156,6 +156,17 @@ class DashboardController extends Controller
                 'data' => array_values($gradesCount) // [A,B,C,D,E]
             ]
         ]);
+    }
+
+    // Display a log of all approved and rejected submissions for admins
+    public function submissionsLog(Request $request)
+    {
+        $activities = Activity::with(['student.user', 'student.teacher.user', 'approvedBy'])
+            ->whereIn('status', ['approved', 'rejected'])
+            ->latest('updated_at')
+            ->paginate(15);
+            
+        return view('admin.submissions_log', compact('activities'));
     }
 }
 

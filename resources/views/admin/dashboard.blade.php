@@ -67,7 +67,7 @@
     <div class="mb-10">
         <div class="flex items-center justify-between mb-4">
             <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2">
-                <i class="fas fa-venus-mars text-indigo-500"></i> Gender Distribution per Class
+                Gender Distribution per Class
             </h2>
         </div>
         <div id="pieChartsGrid" class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -79,7 +79,7 @@
     <div class="mb-10">
         <div class="flex items-center justify-between mb-4">
             <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2">
-                <i class="fas fa-chart-bar text-indigo-500"></i> Monthly Approval Status
+                Monthly Approval Status
             </h2>
         </div>
         <div id="barChartsGrid" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -91,7 +91,7 @@
     <div class="mb-8">
         <div class="flex items-center justify-between mb-4">
             <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2">
-                <i class="fas fa-award text-indigo-500"></i> Grade Distribution
+                Grade Distribution
             </h2>
         </div>
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex-grow relative min-h-[350px]">

@@ -51,6 +51,10 @@
                     <i class="fas fa-lightbulb"></i>
                     <span>Suggestions</span>
                 </a>
+                <a href="{{ route('admin.submissions.log') }}" class="flex items-center gap-2 {{ request()->routeIs('admin.submissions.log') ? 'nav-active' : 'text-gray-700' }} px-4 py-2 rounded-lg hover:bg-gray-100 transition font-medium">
+                    <i class="fas fa-clipboard-list"></i>
+                    <span>Submissions Log</span>
+                </a>
             @endif
 
             @if($role === 'teacher')
@@ -80,7 +84,7 @@
                 </a>
                 <a href="{{ route('student.activities.index') }}" class="flex items-center gap-2 {{ request()->routeIs('student.activities.index') ? 'nav-active' : 'text-gray-700' }} px-4 py-2 rounded-lg hover:bg-gray-100 transition font-medium relative">
                     <i class="fas fa-list-check"></i>
-                    <span>Recorded</span>
+                    <span>History</span>
                     @if($unreadCount > 0)
                         <span class="absolute top-1 right-2 inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold leading-none text-white bg-red-600 rounded-full">
                             {{ $unreadCount }}
@@ -131,6 +135,10 @@
                 <a href="{{ route('admin.suggestions.index') }}" class="flex items-center gap-3 {{ request()->routeIs('admin.suggestions.*') ? 'nav-active' : 'text-gray-700' }} px-4 py-3 rounded-lg hover:bg-gray-100 transition font-medium">
                     <i class="fas fa-lightbulb w-5"></i>
                     <span>Suggestions</span>
+                </a>
+                <a href="{{ route('admin.submissions.log') }}" class="flex items-center gap-3 {{ request()->routeIs('admin.submissions.log') ? 'nav-active' : 'text-gray-700' }} px-4 py-3 rounded-lg hover:bg-gray-100 transition font-medium">
+                    <i class="fas fa-clipboard-list w-5"></i>
+                    <span>Submissions Log</span>
                 </a>
             @endif
 

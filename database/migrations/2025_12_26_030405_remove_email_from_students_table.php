@@ -9,8 +9,6 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('students', function (Blueprint $table) {
-            // Students tak perlu email - remove dari seeder sahaja
-            // Tak perlu drop column sebab column ada dalam users table
         });
     }
 
